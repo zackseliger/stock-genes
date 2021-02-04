@@ -5,7 +5,7 @@ from os import listdir
 from random import random, shuffle
 
 strategies = []
-for i in range(50):
+for i in range(5000):
 	strategies.append(GenerateStrategy)
 
 # describe the runs we're gonna make to evaluate each stock
@@ -55,7 +55,7 @@ for strategy in strategies:
 	# for if our name is verrry special
 	genes = []
 	if strategy.__name__ == GenerateStrategy.__name__:
-		for i in range(17):
+		for i in range(16):
 			genes.append(random())
 		print(genes)
 

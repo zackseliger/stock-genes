@@ -43,36 +43,36 @@ class GenerateStrategy(bt.Strategy):
 		self.genes = self.p.genes
 
 		# generate genes if they weren't provided
-		while len(self.genes) < 17:
+		while len(self.genes) < 16:
 			self.genes.append(random())
 
 		for d in self.datas:
 			d.atr = btind.AverageTrueRange(d, period=14)
 			d.sellNum1 = self.generateNumber(d, self.genes[0])
 			d.sellNum2 = self.generateNumber(d, self.genes[1])
-			d.sellNum3 = self.generateNumber(d, self.genes[3])
-			d.sellNum4 = self.generateNumber(d, self.genes[4])
-			d.sellOp1 = self.getOp(self.genes[5])
-			d.sellOp2 = self.getOp(self.genes[6])
+			d.sellNum3 = self.generateNumber(d, self.genes[2])
+			d.sellNum4 = self.generateNumber(d, self.genes[3])
+			d.sellOp1 = self.getOp(self.genes[4])
+			d.sellOp2 = self.getOp(self.genes[5])
 			# d.sellCombo = self.getCombo(self.genes[5])
-			d.buyNum1 = self.generateNumber(d, self.genes[7])
-			d.buyNum2 = self.generateNumber(d, self.genes[8])
-			d.buyNum3 = self.generateNumber(d, self.genes[9])
-			d.buyNum4 = self.generateNumber(d, self.genes[10])
+			d.buyNum1 = self.generateNumber(d, self.genes[6])
+			d.buyNum2 = self.generateNumber(d, self.genes[7])
+			d.buyNum3 = self.generateNumber(d, self.genes[8])
+			d.buyNum4 = self.generateNumber(d, self.genes[9])
 			# d.buyCombo = self.getCombo(self.genes[10])
-			d.buyOp1 = self.getOp(self.genes[11])
-			d.buyOp2 = self.getOp(self.genes[12])
-			d.sortFactor = (self.getIndexOf(sort_indicators,self.genes[13],0.0,1.0))(d)
+			d.buyOp1 = self.getOp(self.genes[10])
+			d.buyOp2 = self.getOp(self.genes[11])
+			d.sortFactor = (self.getIndexOf(sort_indicators,self.genes[12],0.0,1.0))(d)
 
 		self.printableInfo = "{}".format(self.genes)
 
 	def next(self):
-		orderedstocks = sorted(self.datas, key=lambda stock: stock.sortFactor, reverse=self.genes[14]<0.5)
+		orderedstocks = sorted(self.datas, key=lambda stock: stock.sortFactor, reverse=self.genes[13]<0.5)
 
 		# close positions
 		for d in self.datas:
 			if self.getposition(d).size != 0:
-				cond1 = self.getCond(d.sellOp1(d.sellNum1, d.sellNum2), d.sellOp2(d.sellNum3, d.sellNum4), self.genes[15])
+				cond1 = self.getCond(d.sellOp1(d.sellNum1, d.sellNum2), d.sellOp2(d.sellNum3, d.sellNum4), self.genes[14])
 				if cond1:
 					self.close(d, size=self.getposition(d).size)
 
@@ -91,8 +91,7 @@ class GenerateStrategy(bt.Strategy):
 				continue
 
 			# long signals
-			cond1 = self.getCond(d.buyOp1(d.buyNum1, d.buyNum2), d.buyOp2(d.buyNum3, d.buyNum4), self.genes[16])
-			# cond2 = self.getCond(d.buyNum3, d.buyNum4, self.genes[16])
+			cond1 = self.getCond(d.buyOp1(d.buyNum1, d.buyNum2), d.buyOp2(d.buyNum3, d.buyNum4), self.genes[15])
 			if cond1:
 				self.buy(d, size=buysize)
 
@@ -110,7 +109,7 @@ class GenerateStrategy(bt.Strategy):
 		if gene >= 0.25: # price indicators
 			return (self.getIndexOf(price_indicators,gene,0.25,0.5))(stock)
 		# comparable indicators
-		return (self.getIndexOf(comparable_indicators,gene,0.0,0.5))(stock)
+		return (self.getIndexOf(comparable_indicators,gene,0.0,0.25))(stock)
 
 	def getCond(self, num1, num2, gene):
 		if gene < 0.2:
