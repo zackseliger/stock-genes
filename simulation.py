@@ -4,15 +4,15 @@ from strategies import *
 from os import listdir
 from random import random, shuffle
 
-num_population = 25
-num_genes = 16
+num_population = 50
+num_genes = 22
 population = []
 for i in range(num_population):
 	population.append([[], 0])
 	for j in range(num_genes):
 		population[i][0].append(random())
 
-def breed(parent1, parent2, mutation_rate=0.02):
+def breed(parent1, parent2, mutation_rate=0.04):
 	kiddo = []
 	cuttoff = int(random()*(len(parent1)+1))
 	for i in range(len(parent1)):
@@ -22,7 +22,7 @@ def breed(parent1, parent2, mutation_rate=0.02):
 			kiddo.append(parent2[i])
 
 		if random() < mutation_rate:
-			kiddo[i] += (random()-0.5)*0.0002
+			kiddo[i] = random()
 
 	return kiddo
 
@@ -61,7 +61,7 @@ stockRuns = [
 ]
 
 num_generations = 100
-for i in range(num_generations):
+for gen_num in range(num_generations):
 	# get fitness
 	for person in population:
 		expected_returns = []
@@ -97,7 +97,7 @@ for i in range(num_generations):
 				rrr = abs(ta.won.pnl.average / (ta.lost.pnl.average if ta.lost.pnl.average != 0 else 1))
 				num_trades = ta.total.total
 				pnl = round(ta.pnl.net.total,2)
-				expected_returns.append(wr*rrr*num_trades+pnl)
+				expected_returns.append(pnl)
 			else:
 				print("Error: Unable to analyze trades")
 				break
@@ -108,10 +108,23 @@ for i in range(num_generations):
 			person[1] = fitness
 			print("fitness: {}".format(person[1]))
 
+	# for all strategies w negative returns, make their fitness on a scale from [0,1] based on highest return
+	largest = float('-inf')
+	for person in population:
+		if abs(person[1]) > largest:
+			largest = abs(person[1])
+	for person in population:
+		if person[1] < 0:
+			person[1] = abs(largest/person[1])
+
 	# create weighted pool by fitness to choose new population
 	pool = []
+	total = 0
 	for i in range(len(population)):
-		for j in range(int(max(population[i][1],0))):
+		total += max(population[i][1],0) * max(population[i][1],0)
+	if total == 0: total = 1
+	for i in range(len(population)):
+		for j in range(round(max(population[i][1],0) * max(population[i][1],0) / total * 100)):
 			pool.append(i)
 
 	new_population = []
@@ -137,5 +150,5 @@ for i in range(num_generations):
 	f = open('log.txt', 'a')
 	f.write("{}\n{}\n\n".format(fittest_person[0], fittest_person[1]))
 	f.close()
-	print("most fit: {}".format(fittest_person[1]))
+	print("most fit: {} ({}/{})".format(fittest_person[1], gen_num+1, num_generations))
 	population = new_population
